@@ -1,0 +1,66 @@
+datasource postgres {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  avatar      String?
+  bio         String?
+  corkBoards  CorkBoard[]
+  createdAt   DateTime    @default(now())
+  firstName   String?
+  household   Household?  @relation(fields: [householdId], references: [id])
+  householdId String?
+  id          String      @id @default(cuid())
+  notes       Note[]
+  password    String
+  roles       Json
+  updatedAt   DateTime    @updatedAt
+  username    String      @unique
+}
+
+model Household {
+  corkBoards CorkBoard[]
+  createdAt  DateTime    @default(now())
+  id         String      @id @default(cuid())
+  members    User[]
+  name       String
+  updatedAt  DateTime    @updatedAt
+}
+
+model CorkBoard {
+  createdAt   DateTime  @default(now())
+  createdBy   User?     @relation(fields: [createdById], references: [id])
+  createdById String?
+  household   Household @relation(fields: [householdId], references: [id])
+  householdId String
+  id          String    @id @default(cuid())
+  threads     Thread[]
+  topic       String
+  updatedAt   DateTime  @updatedAt
+}
+
+model Thread {
+  corkboard   CorkBoard @relation(fields: [corkboardId], references: [id])
+  corkboardId String
+  createdAt   DateTime  @default(now())
+  id          String    @id @default(cuid())
+  notes       Note[]
+  topic       String?
+  updatedAt   DateTime  @updatedAt
+}
+
+model Note {
+  author    User?    @relation(fields: [authorId], references: [id])
+  authorId  String?
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  text      String?
+  thread    Thread   @relation(fields: [threadId], references: [id])
+  threadId  String
+  updatedAt DateTime @updatedAt
+}
